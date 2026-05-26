@@ -1,5 +1,19 @@
 #include<iostream>
 #include<string>
+#include<sstream>
+#include<vector>
+
+std::vector<std::string> tokenizeWhitespace(const std::string& input){
+
+std::istringstream stream(input);
+std::vector<std::string> tokens;
+std::string token;
+
+while(stream >> token){
+tokens.push_back(token);
+}
+return tokens;
+}
 
 int main(){
 
@@ -16,8 +30,14 @@ if(input=="exit"){
 break;
 }
 
-std::cout<<"You typed: "<<input<<'\n';
+std::vector<std::string> tokens=tokenizeWhitespace(input);
+
+for(auto token:tokens)
+std::cout<<"["<<token<<"]\n";
+
 }
 
 return 0;
 }
+
+
