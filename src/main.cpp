@@ -2,6 +2,9 @@
 #include<string>
 #include<sstream>
 #include<vector>
+#include<unistd.h>
+#include<sys/types.h>
+#include<sys/wait.h>
 
 std::vector<std::string> tokenizeWhitespace(const std::string& input){
 
@@ -30,11 +33,27 @@ if(input=="exit"){
 break;
 }
 
-std::vector<std::string> tokens=tokenizeWhitespace(input);
+if(input=="forktest"){
+
+pid_t pid=fork();
+
+if(pid==0){
+sleep(5);
+std::cout<<"Child PID: "<<getpid()<<"\n";
+return 0;
+}
+else{
+wait(nullptr);
+std::cout<<"Parent PID: "<<getpid()<<"\n";
+std::cout<<"Parent: Child PID: "<<pid<<"\n";
+}
+}
+
+/* std::vector<std::string> tokens=tokenizeWhitespace(input);
 
 for(auto token:tokens)
 std::cout<<"["<<token<<"]\n";
-
+*/
 }
 
 return 0;
