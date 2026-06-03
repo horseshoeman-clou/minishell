@@ -6,33 +6,8 @@
 #include<sys/types.h>
 #include<sys/wait.h>
 
-void runForkTest(){
-
-pid_t pid=fork();
-
-if(pid==0){
-sleep(5);
-std::cout<<"Child PID: "<<getpid()<<"\n";
-return;
-}
-else{
-wait(nullptr);
-std::cout<<"Parent PID: "<<getpid()<<"\n";
-std::cout<<"Parent: Child PID: "<<pid<<"\n";
-}
-}
-
-std::vector<std::string> tokenizeWhitespace(const std::string& input){
-
-std::istringstream stream(input);
-std::vector<std::string> tokens;
-std::string token;
-
-while(stream >> token){
-tokens.push_back(token);
-}
-return tokens;
-}
+#include "../include/executor.h"
+#include "../include/parser.h"
 
 int main(){
 
@@ -49,40 +24,9 @@ if(input=="exit"){
 break;
 }
 
-if(input=="forktest"){
-runForkTest();
-}
-
 std::vector<std::string> tokens=tokenizeWhitespace(input);
 
-if(tokens.empty()){
-continue;
-}
-
-std::vector<char*> args;
-
-for(auto& token:tokens){
-
-args.push_back(const_cast<char*>(token.c_str()));
-}
-
-args.push_back(nullptr);
-
-pid_t pid=fork();
-
-if(pid==0){
-
-execvp(args[0],args.data());
-
-perror("execvp failed");
-exit(1);
-}
-else{
-wait(nullptr);
-}
-
-
-
+executeCommand(tokens);
 }
 
 return 0;
