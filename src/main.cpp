@@ -24,7 +24,27 @@ if(input=="exit"){
 break;
 }
 
+
+
 std::vector<std::string> tokens=tokenizeWhitespace(input);
+
+if(tokens.empty()){
+continue;
+}
+
+if(tokens[0]=="cd"){
+
+if(tokens.size()<2){
+
+std::cout<<"Usage: cd <directory>\n";
+continue;
+}
+
+if(chdir(tokens[1].c_str())!=0){
+perror("cd failed");
+}
+continue;
+}
 
 executeCommand(tokens);
 }
