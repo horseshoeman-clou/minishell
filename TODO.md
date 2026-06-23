@@ -1,5 +1,7 @@
 TODO:
--Add built-in exit
--Add built-in cd
--Support pipes
--Support redirection
+
+-Replace pipeTest() with executePipe(tokens)
+-Split tokens around '|'
+-Support arbitrary commands
+-Add output redirection '>'
+-Add input redirection '<'
