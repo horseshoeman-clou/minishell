@@ -9,7 +9,8 @@
 #include "../include/executor.h"
 #include "../include/parser.h"
 
-void pipeTest(){
+
+void testPipe(){
 
 int pipefd[2];
 
@@ -70,17 +71,11 @@ wait(nullptr);
 
 int main(){
 
-pipeTest();
-
-return 0;
-}
-/*
 
 char* username=getenv("USER");
 
 while(true){
 
-pipeTest();
 std::cout<<"\033[1;31m"<<username<<"\033[0m"<<"\033[1;36m@minishell>\033[0m ";
 
 std::string input;
@@ -98,6 +93,7 @@ if(tokens.empty()){
 continue;
 }
 
+
 if(tokens[0]=="cd"){
 
 if(tokens.size()<2){
@@ -112,10 +108,26 @@ perror("cd failed");
 continue;
 }
 
+bool hasPipe=false;
+
+for(const auto& token : tokens){
+
+if(token=="|"){
+hasPipe=true;
+break;
+}
+}
+
+if(hasPipe){
+
+testPipe();
+continue;
+}
+
 executeCommand(tokens);
 }
 
 return 0;
 }
 
-*/
+
