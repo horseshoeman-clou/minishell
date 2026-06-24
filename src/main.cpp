@@ -9,66 +9,6 @@
 #include "../include/executor.h"
 #include "../include/parser.h"
 
-
-void testPipe(){
-
-int pipefd[2];
-
-if(pipe(pipefd)==-1){
-perror("pipe failed");
-return;
-}
-
-pid_t pid1=fork();
-if(pid1==0){
-
-close(pipefd[0]);
-
-dup2(pipefd[1],STDOUT_FILENO);
-
-close(pipefd[1]);
-
-char* lsArgs[]={
-(char*) "ls",
-nullptr
-};
-
-execvp(lsArgs[0],lsArgs);
-
-perror("execvp failed");
-
-exit(1);
-}
-
-pid_t pid2=fork();
-
-if(pid2==0){
-
-close(pipefd[1]);
-
-dup2(pipefd[0],STDIN_FILENO);
-
-close(pipefd[0]);
-
-char* grepArgs[]={
-(char*)"grep",
-(char*)"cpp",
-nullptr
-};
-
-execvp(grepArgs[0],grepArgs);
-
-exit(1);
-}
-
-close(pipefd[0]);
-close(pipefd[1]);
-
-wait(nullptr);
-wait(nullptr);
-}
-
-
 int main(){
 
 
@@ -120,7 +60,7 @@ break;
 
 if(hasPipe){
 
-testPipe();
+executePipe(tokens);
 continue;
 }
 

@@ -5,3 +5,5 @@
 #include<string>
 
 void executeCommand(std::vector<std::string>& tokens);
+
+void executePipe(const std::vector<std::string> tokens);
