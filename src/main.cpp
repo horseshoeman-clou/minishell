@@ -49,6 +49,7 @@ continue;
 }
 
 bool hasPipe=false;
+bool hasDirection=false;
 
 for(const auto& token : tokens){
 
@@ -56,11 +57,21 @@ if(token=="|"){
 hasPipe=true;
 break;
 }
+
+if(token==">" || token=="<"){
+hasDirection=true;
+break;
+}
 }
 
 if(hasPipe){
 
 executePipe(tokens);
+continue;
+}
+
+if(hasDirection){
+executeRedirection(tokens);
 continue;
 }
 

@@ -2,6 +2,7 @@
 #include<sys/types.h>
 #include<sys/wait.h>
 #include<iostream>
+#include<fcntl.h>
 
 #include "../include/executor.h"
 
@@ -129,3 +130,77 @@ wait(nullptr);
 wait(nullptr);
 }
 
+
+void executeRedirection(const std::vector<std::string> tokens){
+
+std::vector<std::string> command;
+std::string filename;
+std::string redirectOp;
+
+bool redirectFound=false;
+
+for(auto token : tokens){
+
+if(token=="<" || token==">"){
+redirectOp=token;
+redirectFound=true;
+continue;
+}
+
+if(!redirectFound){
+command.push_back(token);
+continue;
+}
+
+else{
+filename=token;
+continue;
+}
+}
+
+if(command.empty() || filename.empty()){
+
+std::cout<<"Syntax error near redirection\n";
+return;
+}
+
+std::vector<char*> commandArgs;
+
+for(const auto& token : command){
+
+commandArgs.push_back(const_cast<char*>(token.c_str()));
+}
+
+commandArgs.push_back(nullptr);
+
+pid_t pid=fork();
+
+if(pid==-1){
+perror("fork failed");
+return;
+}
+
+if(pid==0){
+int fd=open(filename.c_str(),O_WRONLY | O_CREAT | O_TRUNC, 0644);
+
+if(fd==-1){
+perror("open failed");
+exit(1);
+}
+
+if(redirectOp==">"){
+dup2(fd,STDOUT_FILENO);
+}
+else{
+dup2(fd,STDIN_FILENO);
+}
+close(fd);
+
+execvp(commandArgs[0],commandArgs.data());
+perror("execvp failed");
+exit(1);
+}
+else{
+wait(nullptr);
+}
+}
