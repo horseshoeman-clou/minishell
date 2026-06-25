@@ -181,20 +181,28 @@ return;
 }
 
 if(pid==0){
+
+
+if(redirectOp==">"){
 int fd=open(filename.c_str(),O_WRONLY | O_CREAT | O_TRUNC, 0644);
+dup2(fd,STDOUT_FILENO);
+close(fd);
+}
+else{
+int fd=open(filename.c_str(),O_RDONLY);
 
 if(fd==-1){
 perror("open failed");
 exit(1);
 }
+if(dup2(fd,STDIN_FILENO)==-1){
+perror("dup2 failed");
+exit(1);
+}
 
-if(redirectOp==">"){
-dup2(fd,STDOUT_FILENO);
-}
-else{
-dup2(fd,STDIN_FILENO);
-}
 close(fd);
+}
+
 
 execvp(commandArgs[0],commandArgs.data());
 perror("execvp failed");
@@ -204,3 +212,4 @@ else{
 wait(nullptr);
 }
 }
+
