@@ -141,7 +141,7 @@ bool redirectFound=false;
 
 for(auto token : tokens){
 
-if(token=="<" || token==">"){
+if(token=="<" || token==">" || token ==">>"){
 redirectOp=token;
 redirectFound=true;
 continue;
@@ -181,15 +181,20 @@ return;
 }
 
 if(pid==0){
-
+int fd;
 
 if(redirectOp==">"){
-int fd=open(filename.c_str(),O_WRONLY | O_CREAT | O_TRUNC, 0644);
+fd=open(filename.c_str(),O_WRONLY | O_CREAT | O_TRUNC, 0644);
 dup2(fd,STDOUT_FILENO);
 close(fd);
 }
+else if(redirectOp==">>"){
+
+fd=open(filename.c_str(),O_WRONLY | O_CREAT | O_APPEND, 0644);
+dup2(fd,STDOUT_FILENO);
+}
 else{
-int fd=open(filename.c_str(),O_RDONLY);
+fd=open(filename.c_str(),O_RDONLY);
 
 if(fd==-1){
 perror("open failed");

@@ -1,9 +1,2 @@
-include
-in.txt
-Makefile
-minishell
-out.txt
-README.md
-src
-test.cpp
-TODO.md
+hello
+world

@@ -58,7 +58,7 @@ hasPipe=true;
 break;
 }
 
-if(token==">" || token=="<"){
+if(token==">" || token=="<" || token==">>"){
 hasDirection=true;
 break;
 }
