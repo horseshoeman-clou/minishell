@@ -39,97 +39,102 @@ wait(nullptr);
 
 void executePipe(const std::vector<std::string> tokens){
 
-std::vector<std::string> left,right;
+std::vector<std::string> currentCommand;
+std::vector<std::vector<std::string>> commands;
 
-bool pipeFound=false;
 
 for(const auto& token : tokens){
 
-if(token == "|"){
-pipeFound=true;
-continue;
-}
-
-if(!pipeFound){
-left.push_back(token);
+if(token != "|"){
+currentCommand.push_back(token);
 }
 else{
-right.push_back(token);
-}
-
-}
-
-if(left.empty() || right.empty()){
-
+if(currentCommand.empty()){
 std::cout<<"Syntax error near pipe\n";
 return;
 }
+commands.push_back(currentCommand);
+currentCommand.clear();
+continue;
+}
+}
+if(currentCommand.empty()){
+std::cout<<"Syntax error near pipe\n";
+return;
+}
+commands.push_back(currentCommand);
 
-std::vector<char*> leftArgs;
+int n=commands.size();
 
-for(auto& token : left){
+int pipeFd[n-1][2];
 
-leftArgs.push_back(const_cast<char*>(token.c_str()));
+for(int i=0;i<n-1;i++){
+if(pipe(pipeFd[i])==-1){
+perror("pipe");
+return;
+}
 }
 
-leftArgs.push_back(nullptr);
 
+for(int i=0;i<n;i++){
 
-std::vector<char*> rightArgs;
+pid_t pid=fork();
 
-for(auto& token : right){
-
-rightArgs.push_back(const_cast<char*>(token.c_str()));
-}
-
-rightArgs.push_back(nullptr);
-
-
-int pipefd[2];
-
-if(pipe(pipefd)==-1){
-perror("pipe failed");
+if(pid==-1){
+perror("fork");
 return;
 }
 
-pid_t pid1=fork();
-if(pid1==0){
+if(pid==0){
 
-close(pipefd[0]);
+if(i>0){
+if(dup2(pipeFd[i-1][0],STDIN_FILENO)==-1){
+perror("dup2 stdin");
+exit(1);
+}
+}
 
-dup2(pipefd[1],STDOUT_FILENO);
+if(i<n-1){
+if(dup2(pipeFd[i][1],STDOUT_FILENO)==-1){
+perror("dup2 stdout");
+exit(1);
+}
+}
 
-close(pipefd[1]);
+for(int j=0;j<n-1;j++){
 
-execvp(leftArgs[0],leftArgs.data());
+close(pipeFd[j][0]);
+close(pipeFd[j][1]);
+}
 
-perror("execvp failed");
+std::vector<char*> args;
+
+for(auto& token: commands[i]){
+
+args.push_back(const_cast<char*>(token.c_str()));
+}
+
+args.push_back(nullptr);
+
+execvp(args[0],args.data());
+
+perror("evecvp failed");
 
 exit(1);
 }
-
-pid_t pid2=fork();
-
-if(pid2==0){
-
-close(pipefd[1]);
-
-dup2(pipefd[0],STDIN_FILENO);
-
-close(pipefd[0]);
-
-execvp(rightArgs[0],rightArgs.data());
-
-exit(1);
 }
 
-close(pipefd[0]);
-close(pipefd[1]);
+for(int i=0;i<n-1;i++){
 
-wait(nullptr);
-wait(nullptr);
+close(pipeFd[i][0]);
+close(pipeFd[i][1]);
 }
 
+for(int i=0;i<n;i++){
+wait(nullptr);
+
+}
+}
 
 void executeRedirection(const std::vector<std::string> tokens){
 
