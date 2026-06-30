@@ -7,6 +7,4 @@
 
 void executeCommand(std::vector<std::string>& tokens);
 
-void executePipe(const std::vector<std::string> tokens);
-
-void executeRedirection(const std::vector<std::string> tokens);
+void executePipeRedirection(const std::vector<std::string>& tokens);

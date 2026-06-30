@@ -55,27 +55,20 @@ for(const auto& token : tokens){
 
 if(token=="|"){
 hasPipe=true;
-break;
 }
 
 if(token==">" || token=="<" || token==">>"){
 hasDirection=true;
-break;
 }
 }
 
-if(hasPipe){
-
-executePipe(tokens);
+if(hasPipe || hasDirection){
+executePipeRedirection(tokens);
 continue;
 }
-
-if(hasDirection){
-executeRedirection(tokens);
-continue;
-}
-
+else{
 executeCommand(tokens);
+}
 }
 
 return 0;
