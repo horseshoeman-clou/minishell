@@ -27,7 +27,7 @@ break;
 
 
 
-std::vector<std::string> tokens=tokenizeWhitespace(input);
+std::vector<std::string> tokens=tokenize(input);
 
 if(tokens.empty()){
 continue;
