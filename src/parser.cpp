@@ -74,6 +74,26 @@ if(tokenStarted){
 tokens.push_back(token);
 }
 
+for(std::string& token : tokens){
+
+if(!token.empty() && token[0] =='$'){
+std::string variableName="";
+
+for(size_t i=1;i<token.size();i++){
+variableName+=token[i];
+}
+
+char* value = getenv(variableName.c_str());
+
+if(value !=nullptr){
+
+token = value;
+}
+else{
+token ="";
+}
+}
+}
 return tokens;
 }
 

@@ -3,8 +3,46 @@
 #include<sys/wait.h>
 #include<iostream>
 #include<fcntl.h>
+#include<filesystem>
 
 #include "../include/executor.h"
+
+void custom_cd(const std::vector<std::string>& args){
+
+if(args.size() ==1){
+const char* home = getenv("HOME");
+
+if(!home){
+std::cerr<<"cd: HOME not set\n";
+return;
+}
+
+if(chdir(home)!=0){
+perror("cd");
+}
+return ;
+}
+
+const std::string& path= args[1];
+
+if(chdir(path.c_str())!=0){
+perror("cd");
+}
+}
+
+
+void custom_pwd(){
+
+std::error_code ec;
+auto path = std::filesystem::current_path(ec);
+
+if(ec){
+std::cerr<<"pwd: "<<ec.message()<<'\n';
+return;
+}
+
+std::cout<<path.string()<<'\n';
+}
 
 struct Command{
 
@@ -36,6 +74,16 @@ return buildArgs(command.args);
 void executeCommand(std::vector<std::string>& tokens){
 
 if(tokens.empty()){
+return;
+}
+
+if(tokens[0]=="pwd"){
+custom_pwd();
+return;
+}
+
+if(tokens[0]=="cd"){
+custom_cd(tokens);
 return;
 }
 
