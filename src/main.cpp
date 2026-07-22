@@ -27,24 +27,9 @@ break;
 
 
 
-std::vector<std::string> tokens=tokenize(input);
+std::vector<Token> tokens=tokenize(input);
 
 if(tokens.empty()){
-continue;
-}
-
-
-if(tokens[0]=="cd"){
-
-if(tokens.size()<2){
-
-std::cout<<"Usage: cd <directory>\n";
-continue;
-}
-
-if(chdir(tokens[1].c_str())!=0){
-perror("cd failed");
-}
 continue;
 }
 
@@ -53,11 +38,11 @@ bool hasDirection=false;
 
 for(const auto& token : tokens){
 
-if(token=="|"){
+if(token.value=="|"){
 hasPipe=true;
 }
 
-if(token==">" || token=="<" || token==">>"){
+if(token.value==">" || token.value=="<" || token.value==">>"){
 hasDirection=true;
 }
 }

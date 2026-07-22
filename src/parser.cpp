@@ -10,14 +10,14 @@ SINGLE,
 DOUBLE
 };
 
+std::vector<Token> tokenize(const std::string& input){
 
-std::vector<std::string> tokenize(const std::string& input){
-
-std::vector<std::string> tokens;
+std::vector<Token> tokens;
 std::string token;
 
 State state = State::NONE;
 bool tokenStarted = false;
+bool currentSingleQuote = false;
 
 for(size_t i=0; i<input.size(); i++){
 char c=input[i];
@@ -35,9 +35,15 @@ tokenStarted=true;
 }
 else if(std::isspace(c)){
 if(tokenStarted){
-tokens.push_back(token);
+
+Token t;
+t.value = token;
+t.singleQuoted = currentSingleQuote;
+
+tokens.push_back(t);
 token.clear();
 tokenStarted=false;
+currentSingleQuote = false;
 }
 }
 else{
@@ -58,6 +64,7 @@ tokenStarted=true;
 break;
 
 case State::SINGLE:
+currentSingleQuote = true;
 if(c=='\''){
 state=State::NONE;
 }
@@ -71,26 +78,29 @@ break;
 
 
 if(tokenStarted){
-tokens.push_back(token);
+Token t;
+t.value = token;
+t.singleQuoted = currentSingleQuote;
+tokens.push_back(t);
 }
 
-for(std::string& token : tokens){
+for(Token& token : tokens){
 
-if(!token.empty() && token[0] =='$'){
+if(!token.singleQuoted && !token.value.empty() && token.value[0] =='$'){
 std::string variableName="";
 
-for(size_t i=1;i<token.size();i++){
-variableName+=token[i];
+for(size_t i=1;i<token.value.size();i++){
+variableName+=token.value[i];
 }
 
 char* value = getenv(variableName.c_str());
 
 if(value !=nullptr){
 
-token = value;
+token.value = value;
 }
 else{
-token ="";
+token.value ="";
 }
 }
 }

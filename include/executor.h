@@ -5,6 +5,19 @@
 #include<string>
 #include<fcntl.h>
 
-void executeCommand(std::vector<std::string>& tokens);
+#ifndef PARSER_H
+#define PARSER_H
 
-void executePipeRedirection(const std::vector<std::string>& tokens);
+struct Token {
+std::string value;
+bool singleQuoted = false;
+
+Token() = default;
+explicit Token(const std::string& s) : value(s){}
+};
+
+#endif
+
+void executeCommand(std::vector<Token>& tokens);
+
+void executePipeRedirection(const std::vector<Token>& tokens);

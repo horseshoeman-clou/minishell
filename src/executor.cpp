@@ -7,7 +7,7 @@
 
 #include "../include/executor.h"
 
-void custom_cd(const std::vector<std::string>& args){
+void custom_cd(const std::vector<Token>& args){
 
 if(args.size() ==1){
 const char* home = getenv("HOME");
@@ -23,7 +23,7 @@ perror("cd");
 return ;
 }
 
-const std::string& path= args[1];
+const std::string& path= args[1].value;
 
 if(chdir(path.c_str())!=0){
 perror("cd");
@@ -46,18 +46,18 @@ std::cout<<path.string()<<'\n';
 
 struct Command{
 
-std::vector<std::string> args;
+std::vector<Token> args;
 std::string inputFile;
 std::string outputFile;
 bool append = false;
 };
 
-std::vector<char*> buildArgs(const std::vector<std::string>& command){
+std::vector<char*> buildArgs(const std::vector<Token>& command){
 
 std::vector<char*> args;
 
 for(const auto& token:command){
-args.push_back(const_cast<char*>(token.c_str()));
+args.push_back(const_cast<char*>(token.value.data()));
 }
 
 args.push_back(nullptr);
@@ -71,18 +71,18 @@ return buildArgs(command.args);
 }
 
 
-void executeCommand(std::vector<std::string>& tokens){
+void executeCommand(std::vector<Token>& tokens){
 
 if(tokens.empty()){
 return;
 }
 
-if(tokens[0]=="pwd"){
+if(tokens[0].value=="pwd"){
 custom_pwd();
 return;
 }
 
-if(tokens[0]=="cd"){
+if(tokens[0].value=="cd"){
 custom_cd(tokens);
 return;
 }
@@ -105,14 +105,14 @@ wait(nullptr);
 }
 
 
-void executePipeRedirection(const std::vector<std::string>& tokens)
+void executePipeRedirection(const std::vector<Token>& tokens)
 {
 std::vector<Command> commands;
 Command current;
 
 for (size_t i = 0; i < tokens.size(); i++)
 {
-std::string token = tokens[i];
+std::string token = tokens[i].value;
 
 if (token == "|")
 {
@@ -133,7 +133,7 @@ std::cout << "Syntax error near redirection\n";
 return;
 }
 
-current.inputFile = tokens[++i];
+current.inputFile = tokens[++i].value;
 }
 else if (token == ">")
 {
@@ -143,7 +143,7 @@ std::cout << "Syntax error near redirection\n";
 return;
 }
 
-current.outputFile = tokens[++i];
+current.outputFile = tokens[++i].value;
 }
 else if (token == ">>")
 {
@@ -153,12 +153,12 @@ std::cout << "Syntax error near redirection\n";
 return;
 }
 
-current.outputFile = tokens[++i];
+current.outputFile = tokens[++i].value;
 current.append = true;
 }
 else
 {
-current.args.push_back(token);
+current.args.push_back(Token(token));
 }
 }
 
@@ -263,6 +263,20 @@ for (int j = 0; j < n - 1; j++)
 {
 close(pipeFd[j][0]);
 close(pipeFd[j][1]);
+}
+
+if(commands[i].args.empty()){
+exit(1);
+}
+
+if(commands[i].args[0].value == "pwd"){
+custom_pwd();
+exit(0);
+}
+
+if(commands[i].args[0].value == "cd"){
+custom_cd(commands[i].args);
+exit(0);
 }
 
 std::vector<char*> args = buildArgs(commands[i]);
