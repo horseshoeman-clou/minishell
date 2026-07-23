@@ -8,26 +8,34 @@
 
 #include "../include/executor.h"
 #include "../include/parser.h"
+#include "../include/history.h"
+
+const char* username = std::getenv("USER")? std::getenv("USER") : "user";
+
+const std::string RED = "\033[1;31m";
+const std::string CYAN = "\033[1;36m";
+const std::string RESET = "\033[0m";
+
+std::string SHELL_PROMPT = RED + username + RESET + CYAN + "@minishell" + RESET + ": " ;
+
 
 int main(){
 
-
-char* username=getenv("USER");
+History history;
 
 while(true){
 
-std::cout<<"\033[1;31m"<<username<<"\033[0m"<<"\033[1;36m@minishell>\033[0m ";
+std::cout<<SHELL_PROMPT<<std::flush;
 
-std::string input;
-std::getline(std::cin,input);
+std::string line = readLine(history);
 
-if(input=="exit"){
+if(line=="exit"){
 break;
 }
 
 
 
-std::vector<Token> tokens=tokenize(input);
+std::vector<Token> tokens=tokenize(line);
 
 if(tokens.empty()){
 continue;
