@@ -1,6 +1,8 @@
 #include<sstream>
 #include<vector>
 #include<iostream>
+#include<cctype>
+#include<cstdlib>
 
 #include "../include/parser.h"
 
@@ -18,9 +20,22 @@ std::string token;
 State state = State::NONE;
 bool tokenStarted = false;
 bool currentSingleQuote = false;
+bool escaped = false;
 
 for(size_t i=0; i<input.size(); i++){
 char c=input[i];
+
+if(escaped){
+token+=c;
+tokenStarted = true;
+escaped = false;
+continue;
+}
+
+if(state!=State::SINGLE && c == '\\'){
+escaped = true;
+continue;
+}
 
 switch(state){
 
@@ -64,13 +79,18 @@ tokenStarted=true;
 break;
 
 case State::SINGLE:
-currentSingleQuote = true;
-if(c=='\''){
-state=State::NONE;
+
+if(c == '\\' && i+1<input.size()){
+
+token+=input[i+1];
+i++;
+}
+else if (c == '\''){
+state = State::NONE;
 }
 else{
 token+=c;
-tokenStarted=true;
+tokenStarted = true;
 }
 break;
 }
@@ -86,24 +106,48 @@ tokens.push_back(t);
 
 for(Token& token : tokens){
 
-if(!token.singleQuoted && !token.value.empty() && token.value[0] =='$'){
-std::string variableName="";
+if(token.singleQuoted)
+continue;
 
-for(size_t i=1;i<token.value.size();i++){
-variableName+=token.value[i];
+if(!token.value.empty()){
+std::string expanded;
+
+for(size_t i=0;i<token.value.size();i++){
+
+if(token.value[i] == '$'){
+
+std::string var;
+i++;
+
+while(i< token.value.size() && (std::isalnum(static_cast<unsigned char>(token.value[i])) || token.value[i] == '_')){
+
+var+=token.value[i];
+i++;
 }
+i--;
 
-char* value = getenv(variableName.c_str());
 
-if(value !=nullptr){
+const char* value = std::getenv(var.c_str());
 
-token.value = value;
+if(value){
+expanded += value;
 }
 else{
-token.value ="";
+expanded += '$';
+expanded += var;
 }
 }
+
+else{
+expanded+=token.value[i];
 }
+}
+
+token.value = expanded;
+
+}
+}
+
 return tokens;
 }
 

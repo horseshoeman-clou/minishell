@@ -92,7 +92,6 @@ std::vector<char*> args=buildArgs(tokens);
 pid_t pid=fork();
 
 if(pid==0){
-
 execvp(args[0],args.data());
 
 perror("execvp failed");
@@ -280,6 +279,7 @@ exit(0);
 }
 
 std::vector<char*> args = buildArgs(commands[i]);
+
 
 execvp(args[0], args.data());
 perror("execvp failed");
