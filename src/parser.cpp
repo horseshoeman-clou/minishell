@@ -20,33 +20,37 @@ std::string token;
 State state = State::NONE;
 bool tokenStarted = false;
 bool currentSingleQuote = false;
-bool escaped = false;
+
 
 for(size_t i=0; i<input.size(); i++){
 char c=input[i];
 
-if(escaped){
-token+=c;
-tokenStarted = true;
-escaped = false;
-continue;
-}
-
-if(state!=State::SINGLE && c == '\\'){
-escaped = true;
-continue;
-}
-
 switch(state){
 
 case State::NONE:
-if(c == '"'){
+
+if(c == '\\' && i+1 < input.size()){
+char next = input[i+1];
+
+if(next == '"' || next == '\'' || next == '\\'){
+token += next;
+i++;
+tokenStarted = true;
+}
+else{
+token += c;
+tokenStarted = true;
+}
+}
+
+else if(c == '"'){
 state=State::DOUBLE;
 tokenStarted = true;
 }
 else if(c=='\''){
 state=State::SINGLE;
 tokenStarted=true;
+currentSingleQuote = true;
 }
 else if(std::isspace(c)){
 if(tokenStarted){
@@ -69,7 +73,29 @@ tokenStarted=true;
 break;
 
 case State::DOUBLE:
-if(c=='"'){
+
+if(c == '\\' && i+1<input.size()){
+char next = input[i+1];
+
+if(next == '"' || next == '\\' || next == '$' || next == '`'){
+
+if( next == '$'){
+token += '\\';
+
+token += '$';
+i++;
+}
+else{
+
+token+=next;
+i++;
+}
+}
+else{
+token+=c;
+}
+}
+else if(c=='"'){
 state=State::NONE;
 }
 else{
@@ -114,7 +140,12 @@ std::string expanded;
 
 for(size_t i=0;i<token.value.size();i++){
 
-if(token.value[i] == '$'){
+if(token.value[i] == '\\' && i+1<token.value.size() && token.value[i+1] =='$'){
+
+expanded+='$';
+i++;
+}
+else if(token.value[i] == '$'){
 
 std::string var;
 i++;
