@@ -30,7 +30,7 @@ if(!cmd.empty()){
 commands.push_back(cmd);
 }
 
-index=-1;
+index=SIZE_MAX;
 saved_line.clear();
 }
 
@@ -63,7 +63,7 @@ current = commands[index];
 return true;
 }
 
-index = -1;
+index = SIZE_MAX;
 current = saved_line;
 return true;
 }
@@ -72,6 +72,17 @@ std::string readLine(History& history){
 
 RawMode raw;
 std::string line;
+size_t cursor_pos = 0;
+
+auto redraw = [&](const std::string& current_line, size_t pos){
+
+std::cout<<"\033[2K\r"<<SHELL_PROMPT<<current_line<<std::flush;
+
+if(pos<current_line.size()){
+std::cout<<"\033["<<(current_line.size()-pos)<<"D"<<std::flush;
+}
+};
+
 
 while(true){
 
@@ -97,7 +108,8 @@ switch (seq[1]){
 case 'A' :
 
 if(history.up(line)){
-std::cout<<"\033[2K\r"<<SHELL_PROMPT <<line<<std::flush;
+cursor_pos = line.size();
+redraw(line, cursor_pos);
 }
 
 break;
@@ -105,9 +117,30 @@ break;
 case 'B' :
 
 if(history.down(line)){
-std::cout<<"\033[2K\r"<<SHELL_PROMPT<<line<<std::flush;
+cursor_pos = line.size();
+redraw(line, cursor_pos);
 }
+
 break;
+
+case 'C':
+
+if(cursor_pos < line.size()){
+cursor_pos++;
+redraw(line, cursor_pos);
+}
+
+break;
+
+case 'D':
+
+if(cursor_pos>0){
+cursor_pos--;
+redraw(line,cursor_pos);
+}
+
+break;
+
 }
 }
 continue;
@@ -122,19 +155,185 @@ return line;
 
 if(c==127 || c  == '\b'){
 
-if(!line.empty()){
-line.pop_back();
-std::cout<<"\033[2K\r"<<SHELL_PROMPT<<line<<std::flush;
+if(cursor_pos>0){
+
+line.erase(cursor_pos-1,1);
+cursor_pos--;
+redraw(line, cursor_pos);
 }
 
 continue;
 }
 
 if(c >= 32 && c <=127){
-line+=c;
-std::cout<<c<<std::flush;
+
+line.insert(cursor_pos, 1, c);
+cursor_pos++;
+redraw(line, cursor_pos);
 }
 }
 
 return line;
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
