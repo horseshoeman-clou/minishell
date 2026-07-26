@@ -3,8 +3,10 @@
 #include<iostream>
 #include<cctype>
 #include<cstdlib>
+#include<unistd.h>
 
 #include "../include/parser.h"
+#include "../include/shell_state.h"
 
 enum class State {
 NONE,
@@ -140,12 +142,22 @@ std::string expanded;
 
 for(size_t i=0;i<token.value.size();i++){
 
-if(token.value[i] == '\\' && i+1<token.value.size() && token.value[i+1] =='$'){
+if(token.value[i] == '$' && i+1<token.value.size()){
 
-expanded+='$';
+char next = token.value[i+1];
+
+if(next=='?'){
+
+expanded+=std::to_string(last_exit_status);
 i++;
 }
-else if(token.value[i] == '$'){
+
+else if(next == '$'){
+expanded+=std::to_string(getpid());
+i++;
+}
+
+else{
 
 std::string var;
 i++;
@@ -168,17 +180,21 @@ expanded += '$';
 expanded += var;
 }
 }
+}
 
+else if(token.value[i] == '\\' && i+1<token.value.size() && token.value[i+1] == '$'){
+expanded+= '$';
+i++;
+}
 else{
 expanded+=token.value[i];
+
 }
 }
 
 token.value = expanded;
-
 }
 }
-
 return tokens;
 }
 

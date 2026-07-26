@@ -6,42 +6,48 @@
 #include<filesystem>
 
 #include "../include/executor.h"
+#include "../include/shell_state.h"
 
-void custom_cd(const std::vector<Token>& args){
+int custom_cd(const std::vector<Token>& args){
 
 if(args.size() ==1){
 const char* home = getenv("HOME");
 
 if(!home){
 std::cerr<<"cd: HOME not set\n";
-return;
+return 1;
 }
 
 if(chdir(home)!=0){
-perror("cd");
+perror("cd");;
+return 1;
 }
-return ;
+return 0;
 }
 
 const std::string& path= args[1].value;
 
 if(chdir(path.c_str())!=0){
 perror("cd");
+return 1;
 }
+setenv("PWD", path.c_str(), 1);
+return 0;
 }
 
 
-void custom_pwd(){
+int custom_pwd(){
 
 std::error_code ec;
 auto path = std::filesystem::current_path(ec);
 
 if(ec){
 std::cerr<<"pwd: "<<ec.message()<<'\n';
-return;
+return 1;
 }
 
 std::cout<<path.string()<<'\n';
+return 0;
 }
 
 struct Command{
@@ -78,12 +84,12 @@ return;
 }
 
 if(tokens[0].value=="pwd"){
-custom_pwd();
+last_exit_status=custom_cd(tokens);
 return;
 }
 
 if(tokens[0].value=="cd"){
-custom_cd(tokens);
+last_exit_status=custom_cd(tokens);
 return;
 }
 
@@ -95,14 +101,20 @@ if(pid==0){
 execvp(args[0],args.data());
 
 perror("execvp failed");
-exit(1);
+exit(127);
 }
 else{
-wait(nullptr);
-}
+int status;
+waitpid(pid, &status, 0);
 
+if(WIFEXITED(status)){
+last_exit_status = WEXITSTATUS(status);
 }
-
+else{
+last_exit_status = 1;
+}
+}
+}
 
 void executePipeRedirection(const std::vector<Token>& tokens)
 {
@@ -269,13 +281,13 @@ exit(1);
 }
 
 if(commands[i].args[0].value == "pwd"){
-custom_pwd();
-exit(0);
+last_exit_status = custom_pwd();
+return;
 }
 
 if(commands[i].args[0].value == "cd"){
-custom_cd(commands[i].args);
-exit(0);
+last_exit_status = custom_cd(commands[i].args);
+return;
 }
 
 std::vector<char*> args = buildArgs(commands[i]);
@@ -283,7 +295,17 @@ std::vector<char*> args = buildArgs(commands[i]);
 
 execvp(args[0], args.data());
 perror("execvp failed");
-exit(1);
+exit(127);
+}
+else{
+int status;
+waitpid(pid, &status, 0);
+if(WIFEXITED(status)){
+last_exit_status=WEXITSTATUS(status);
+}
+else{
+last_exit_status = 1;
+}
 }
 }
 

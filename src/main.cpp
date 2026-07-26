@@ -9,6 +9,10 @@
 #include "../include/executor.h"
 #include "../include/parser.h"
 #include "../include/history.h"
+#include "../include/shell_state.h"
+
+int last_exit_status = 0;
+
 
 const char* username = std::getenv("USER")? std::getenv("USER") : "user";
 
