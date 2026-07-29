@@ -143,6 +143,21 @@ std::sort(matches.begin(), matches.end());
 return matches;
 }
 
+bool isCommandPosition(const std::string& line, size_t word_start){
+
+if(word_start ==0)
+return true;
+
+size_t i = word_start;
+
+while(i>0 && std::isspace(line[i-1]))
+i--;
+
+if(i>0 && line[i-1] == '|')
+return true;
+return false;
+}
+
 const std::vector<std::string> BUILTINS = {"echo", "cd", "pwd", "exit", "false", "true"};
 
 bool isDirectory(const std::string& path){
@@ -325,7 +340,7 @@ auto [word_start, word_end] = getCurrentWordBounds(line, cursor_pos);
 
 std::string prefix = line.substr(word_start, word_end-word_start);
 
-bool is_first_word = (word_start == 0);
+bool is_first_word = isCommandPosition(line, word_start);
 
 std::vector<std::string> matches;
 
