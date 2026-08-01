@@ -1,7 +1,0 @@
-﻿Component,File,Responsibility
-**Terminal Input**,`history.cpp`,"Reads keystrokes in raw mode. Handles arrow keys (↑↓←→), backspace, tab completion, and line editing. Returns a complete string on Enter."
-**Tokenizer**,`parser.cpp`,"Splits raw input into `Token` objects. Tracks quote state (`'...'` vs `""...""`) and handles escape sequences (`\""`, `\'`, `\$`)."
-**Variable Expander**,`parser.cpp`,"Substitutes `$VAR`, `$?`, `$$`, and environment variables. Skips tokens marked as single-quoted."
-**Wildcard Expander**,`parser.cpp`,"Uses POSIX `glob()` to expand `*`, `?`, and `~` patterns. One token can become many tokens."
-**Executor**,`executor.cpp`,"Dispatches builtins (`cd`, `pwd`) in the parent process. Forks and `execvp`s external commands. Handles pipes and redirections."
-**Shell State**,`shell_state.h`,Global `last_exit_status` shared between parser and executor for `$?` expansion.
