@@ -1,2 +1,2 @@
-test.cpp
 "hello world"
+"bye"
